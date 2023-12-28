@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureEventHubEmulator.Host", "AzureEventHubEmulator.Host\AzureEventHubEmulator.Host.csproj", "{97DAFC1A-5982-410E-86CE-6CDB2E702F3D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureEventHubEmulator", "AzureEventHubEmulator\AzureEventHubEmulator.csproj", "{94F0E510-C4C6-4ADE-94F9-93B9FF51A5CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureEventHubEmulator.IntegrationTests", "AzureEventHubEmulator.IntegrationTests\AzureEventHubEmulator.IntegrationTests.csproj", "{ACAA81C3-68D4-4E45-A890-C12B70B84926}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97DAFC1A-5982-410E-86CE-6CDB2E702F3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97DAFC1A-5982-410E-86CE-6CDB2E702F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97DAFC1A-5982-410E-86CE-6CDB2E702F3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97DAFC1A-5982-410E-86CE-6CDB2E702F3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94F0E510-C4C6-4ADE-94F9-93B9FF51A5CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94F0E510-C4C6-4ADE-94F9-93B9FF51A5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F0E510-C4C6-4ADE-94F9-93B9FF51A5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94F0E510-C4C6-4ADE-94F9-93B9FF51A5CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACAA81C3-68D4-4E45-A890-C12B70B84926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACAA81C3-68D4-4E45-A890-C12B70B84926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACAA81C3-68D4-4E45-A890-C12B70B84926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACAA81C3-68D4-4E45-A890-C12B70B84926}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
