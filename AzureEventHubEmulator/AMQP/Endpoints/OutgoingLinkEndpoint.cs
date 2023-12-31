@@ -1,46 +1,55 @@
-﻿using Amqp.Framing;
+﻿using System.Threading.Channels;
+using Amqp;
+using Amqp.Framing;
 using Amqp.Listener;
-using AzureEventHubEmulator.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace AzureEventHubEmulator.AMQP.Endpoints;
 
 internal sealed class OutgoingLinkEndpoint : LinkEndpoint
 {
-    private readonly IDeliveryQueue _deliveryQueue;
+    private readonly ILogger _logger;
+    private readonly ChannelReader<Message> _reader;
+    private readonly ListenerLink _listenerLink;
     private CancellationTokenSource _flowTask;
 
-    public OutgoingLinkEndpoint(IDeliveryQueue deliveryQueue)
+
+    public OutgoingLinkEndpoint(ILogger logger, ChannelReader<Message> reader, ListenerLink attachContextLink)
     {
-        _deliveryQueue = deliveryQueue;
+        _logger = logger;
+        _reader = reader;
+        _listenerLink = attachContextLink;
     }
 
-    public override void OnLinkClosed(ListenerLink link, Error error)
-        => CancelFlowTask();
 
     public override void OnFlow(FlowContext flowContext)
     {
         CancelFlowTask();
-
         _flowTask = new CancellationTokenSource();
-        CancellationToken cancellationToken = _flowTask.Token;
-
-        Task.Run(() => SendMessages(flowContext, cancellationToken));
+        var cancellationToken = _flowTask.Token;
+        Task.Run(() => SendMessages(flowContext, cancellationToken), cancellationToken);
     }
 
-    private void SendMessages(FlowContext flowContext, CancellationToken cancellationToken)
+    private async Task SendMessages(FlowContext flowContext, CancellationToken cancellationToken)
     {
         var messages = flowContext.Messages;
         while (messages-- > 0)
         {
             try
             {
-                Amqp.Message message = _deliveryQueue.Dequeue(cancellationToken);
-                flowContext.Link.SendMessage(message);
+                // block until the channel has a message
+                await _reader.WaitToReadAsync(cancellationToken);
+                _reader.TryRead(out var message);
+                if (message == null)
+                {
+                    return;
+                }
+
+                _listenerLink.SendMessage(message);
             }
-            catch (OperationCanceledException e)
-                when (e.CancellationToken == cancellationToken)
+            catch (OperationCanceledException e) when (e.CancellationToken == cancellationToken)
             {
-                System.Diagnostics.Debug.WriteLine("Delivery queue cancelled.");
+                _logger.LogDebug("Delivery queue cancelled.");
                 return;
             }
         }
@@ -48,12 +57,13 @@ internal sealed class OutgoingLinkEndpoint : LinkEndpoint
 
     public override void OnDisposition(DispositionContext dispositionContext)
     {
-        _deliveryQueue.Process(dispositionContext);
         dispositionContext.Complete();
     }
 
     public override void OnMessage(MessageContext messageContext)
         => throw new NotSupportedException();
+
+    public override void OnLinkClosed(ListenerLink link, Error error) => CancelFlowTask();
 
     private void CancelFlowTask()
     {

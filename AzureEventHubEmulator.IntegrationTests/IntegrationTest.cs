@@ -16,8 +16,8 @@ public class IntegrationTest : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task TestProduceConsume()
     {
-        await _consumer.StartAsync();
         await _producer.SendAsync("hello world");
+        await _consumer.StartAsync();
         await AssertEventuallyAsync(() => _consumer.GetEvents().Any(), TimeSpan.FromSeconds(60));
         Assert.Equal("hello world", _consumer.GetEvents().First());
     }

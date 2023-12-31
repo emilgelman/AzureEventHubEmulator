@@ -5,16 +5,16 @@ namespace AzureEventHubEmulator.AMQP.Endpoints;
 
 internal sealed class IncomingLinkEndpoint : LinkEndpoint
 {
-    private readonly IEntity _entity;
+    private readonly Topic _topic;
 
-    internal IncomingLinkEndpoint(IEntity entity)
+    internal IncomingLinkEndpoint(Topic topic)
     {
-        _entity = entity;
+        _topic = topic;
     }
 
     public override void OnMessage(MessageContext messageContext)
     {
-        _entity.Post(messageContext.Message.Clone());
+        _topic.PublishMessage(messageContext.Message.Clone());
         messageContext.Complete();
     }
 
