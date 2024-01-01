@@ -1,7 +1,6 @@
 ﻿using Amqp;
 using Amqp.Framing;
 using Amqp.Listener;
-using Amqp.Types;
 using AzureEventHubEmulator.AMQP.Endpoints;
 using AzureEventHubEmulator.Entities;
 using Microsoft.Extensions.Logging;
@@ -24,7 +23,7 @@ public class LinkProcessor : ILinkProcessor
         if (string.IsNullOrEmpty(attachContext.Attach.LinkName))
         {
             attachContext.Complete(new Error(ErrorCode.InvalidField) { Description = "Empty link name not allowed." });
-            _logger.LogError($"Could not attach empty link to {GetType().Name}.");
+            _logger.LogError($"Could not attach empty link");
             return;
         }
 
@@ -44,35 +43,37 @@ public class LinkProcessor : ILinkProcessor
         if (topic == null)
         {
             attachContext.Complete(new Error(ErrorCode.NotFound) { Description = "Topic not found." });
-            _logger.LogError($"Could not attach incoming link to non-existing topic '{target.Address}'.");
+            _logger.LogError("Could not attach incoming link to non-existing topic {topic}", target.Address);
             return;
         }
 
-        var incomingLinkEndpoint = new IncomingLinkEndpoint(topic);
+        var incomingLinkEndpoint = new IncomingLinkEndpoint(_logger, topic);
         attachContext.Complete(incomingLinkEndpoint, 300);
-        _logger.LogInformation($"Attached incoming link to entity '{target.Address}'.");
+        _logger.LogInformation("Attached incoming link to topic {topic}", target.Address);
     }
 
     private void AttachOutgoingLink(AttachContext attachContext, Source source)
     {
-        var epoch = attachContext.Attach.Properties[new Symbol("com.microsoft:epoch")];
-        if (epoch == null)
+        var receiverName = attachContext.ExtractReceiverName();
+        var epoch = attachContext.ExtractEpoch();
+
+        if (receiverName is null or "validate" || epoch is null) // validation only, consumer isn't ready yet
         {
             attachContext.Complete(new NoopOutgoingLinkEndpoint(), 0);
             return;
         }
 
-        var topicName = "/" + source.Address.Split("/")[1];
+        var topicName = source.ExtractTopicName();
         var topic = _topicRegistry.Find(topicName);
         if (topic == null)
         {
             attachContext.Complete(new Error(ErrorCode.NotFound) { Description = "Topic not found." });
-            _logger.LogError($"Could not attach outgoing link to non-existing topic '{topicName}'.");
+            _logger.LogError("Could not attach outgoing link to non-existing topic {topicName}", topicName);
             return;
         }
 
         var outgoingLinkEndpoint = new OutgoingLinkEndpoint(_logger, topic.Reader(), attachContext.Link);
         attachContext.Complete(outgoingLinkEndpoint, 0);
-        _logger.LogInformation($"Attached outgoing link to entity '{source.Address}'.");
+        _logger.LogInformation("Attached outgoing link to entity {entity}", source.Address);
     }
 }

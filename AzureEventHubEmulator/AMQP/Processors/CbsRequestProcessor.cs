@@ -10,7 +10,7 @@ public class CbsRequestProcessor : IRequestProcessor
 
     public void Process(RequestContext requestContext)
     {
-        using Message message = GetResponseMessage(200, requestContext);
+        using var message = GetResponseMessage(200, requestContext);
         requestContext.Complete(message);
     }
 

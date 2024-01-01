@@ -23,7 +23,11 @@ public class Consumer
             storageClient,
             EventHubConsumerClient.DefaultConsumerGroupName,
             eventHubConnectionString,
-            eventHubName);
+            eventHubName, new EventProcessorClientOptions()
+            {
+                PrefetchCount = 300,
+                MaximumWaitTime = TimeSpan.FromMinutes(2)
+            });
 
         processor.ProcessEventAsync += ProcessEventHandler;
         processor.ProcessErrorAsync += ProcessErrorHandler;

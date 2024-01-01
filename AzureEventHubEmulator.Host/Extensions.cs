@@ -23,7 +23,7 @@ public static class Extensions
         services.AddSingleton<ManagementRequestProcessor>();
         services.AddSingleton<ILinkProcessor, LinkProcessor>();
 
-        services.AddSingleton<ITopicRegistry>(_ => new TopicRegistry(new List<string> { "/test" }));
+        services.AddSingleton<ITopicRegistry, TopicRegistry>();
 
         services.AddSingleton<EventHubEmulatorHost>();
     }

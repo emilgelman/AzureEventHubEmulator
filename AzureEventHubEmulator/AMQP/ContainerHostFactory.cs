@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Amqp;

@@ -7,29 +7,38 @@ namespace AzureEventHubEmulator.AMQP.Processors;
 
 public class ManagementRequestProcessor : IRequestProcessor
 {
+    private const string ReadOperation = "READ";
+
     int IRequestProcessor.Credit => 100;
 
-    void IRequestProcessor.Process(RequestContext requestContext)
-    {
-        Console.WriteLine("Received a request " + requestContext.Message.Body);
-        var task = this.ReplyAsync(requestContext);
-    }
-
-    Task ReplyAsync(RequestContext requestContext)
+    public void Process(RequestContext requestContext)
     {
         var message = requestContext.Message;
-        if ((string)message.ApplicationProperties.Map["operation"] == "READ")
+        var operation = (string)message.ApplicationProperties.Map["operation"];
+        if (operation != ReadOperation)
         {
-            var AmqpMap = new Map();
-            AmqpMap.Add("partition_ids", new[] { "0" });
-            AmqpMap.Add("name", "test");
-            AmqpMap.Add("created_at", DateTime.Now);
-            var response = new Message(AmqpMap);
-            response.ApplicationProperties = new ApplicationProperties();
-            response.ApplicationProperties["status-code"] = 200;
-            requestContext.Complete(response);
+            return;
         }
 
-        return Task.CompletedTask;
+        var response = CreateResponseMessage(requestContext);
+        requestContext.Complete(response);
+    }
+
+    private static Message CreateResponseMessage(RequestContext requestContext)
+    {
+        return new Message(
+            new Map
+            {
+                { "partition_ids", new[] { "0" } },
+                { "name", requestContext.ExtractTopicName() },
+                { "created_at", DateTime.Now }
+            }
+        )
+        {
+            ApplicationProperties = new ApplicationProperties
+            {
+                ["status-code"] = 200
+            }
+        };
     }
 }

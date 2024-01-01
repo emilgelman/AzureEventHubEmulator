@@ -9,7 +9,11 @@ public class Topic
 
     public Topic()
     {
-        _eventChannel = Channel.CreateUnbounded<Message>();
+        _eventChannel = Channel.CreateUnbounded<Message>(new UnboundedChannelOptions
+        {
+            SingleReader = false,
+            SingleWriter = false
+        });
     }
 
     public ChannelReader<Message> Reader() => _eventChannel.Reader;

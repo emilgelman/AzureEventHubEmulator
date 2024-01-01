@@ -11,7 +11,7 @@ internal sealed class OutgoingLinkEndpoint : LinkEndpoint
     private readonly ILogger _logger;
     private readonly ChannelReader<Message> _reader;
     private readonly ListenerLink _listenerLink;
-    private CancellationTokenSource _flowTask;
+    private CancellationTokenSource? _flowTask;
 
 
     public OutgoingLinkEndpoint(ILogger logger, ChannelReader<Message> reader, ListenerLink attachContextLink)
@@ -38,18 +38,13 @@ internal sealed class OutgoingLinkEndpoint : LinkEndpoint
             try
             {
                 // block until the channel has a message
-                await _reader.WaitToReadAsync(cancellationToken);
-                _reader.TryRead(out var message);
-                if (message == null)
-                {
-                    return;
-                }
-
+                var message = await _reader.ReadAsync(cancellationToken);
                 _listenerLink.SendMessage(message);
+                _logger.LogInformation("Sent message: {message}", message.String());
             }
             catch (OperationCanceledException e) when (e.CancellationToken == cancellationToken)
             {
-                _logger.LogDebug("Delivery queue cancelled.");
+                _logger.LogDebug("Delivery queue cancelled");
                 return;
             }
         }

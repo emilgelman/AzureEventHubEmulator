@@ -1,7 +1,6 @@
 using Azure.Storage.Blobs;
 using AzureEventHubEmulator.Configuration;
 using AzureEventHubEmulator.Host;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -48,13 +47,19 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
     {
         return Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
             .UseEnvironment("IntegrationTest")
-            .ConfigureServices((hostContext, services) =>
+            .ConfigureServices((_, services) =>
             {
-                services.AddSingleton<EmulatorOptions>(sp => { return new EmulatorOptions(); });
+                services.AddSingleton<EmulatorOptions>(sp => new EmulatorOptions()
+                {
+                    Topics = "test"
+                });
                 services.AddAzureEventHubEmulator();
             })
-            .ConfigureServices(services => services.AddAzureEventHubEmulator())
-            .ConfigureServices(services => { services.AddHostedService<EventHubEmulatorService>(); })
+            .ConfigureServices(services =>
+            {
+                services.AddAzureEventHubEmulator();
+                services.AddHostedService<EventHubEmulatorService>();
+            })
             .Build();
     }
 }
