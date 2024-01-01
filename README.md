@@ -17,9 +17,9 @@ docker run --rm -it -p 0.0.0.0:5671:5671 -e EMULATOR__TOPICS=test,test2 emilgelm
 
 ## Configuration
 
-Set the `TOPIC_NAMES` environment variable to a comma-separated list of Event Hubs to create. For example:
+Set the `EMULATOR_TOPICS` environment variable to a comma-separated list of Event Hubs to create. For example:
 
-> TOPIC_NAMES=topic1,topic2
+> EMULATOR_TOPICS=topic1,topic2
 
 Use the following connection string in your application, replace `test` with your Event Hub name:
 
